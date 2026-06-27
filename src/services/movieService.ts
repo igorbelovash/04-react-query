@@ -11,18 +11,19 @@ interface TmdbResponse {
     total_results: number;
 }
 
-async function fetchMovies(query: string): Promise<Movie[]> {
+async function fetchMovies(query: string, page: number): Promise<TmdbResponse> {
     try {
         const { data } = await axios.get<TmdbResponse>(BASE_URL, {
             params: {
                 query,
+                page,
             },
             headers: {
                 accept: 'application/json',
                 Authorization: `Bearer ${VITE_TMDB_TOKEN}`
             }
         });
-        return data.results;
+        return data;
     } catch (error) {
         console.error("Error fetching movies:", error);
         throw error;
