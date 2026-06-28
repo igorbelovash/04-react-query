@@ -3,7 +3,7 @@ import SearchBar from "../SearchBar/SearchBar.tsx";
 import fetchMovies from "../../services/movieService.ts";
 import type { Movie } from "../../types/movie.ts";
 import toast, { Toaster } from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MovieGrid from "../MovieGrid/MovieGrid.tsx";
 import Loader from "../Loader/Loader.tsx";
 import ErrorMessage from "../ErrorMessage/ErrorMessage.tsx";
@@ -29,14 +29,7 @@ function App() {
 
   const { data, isError, isLoading, isSuccess } = useQuery({
     queryKey: ["movies", query, page],
-    queryFn: async (): Promise<{ results: Movie[]; total_pages: number }> => {
-      const response = await fetchMovies(query, page);
-      if (!response || !response.results || !response.results.length) {
-        toast.error("No movies found for your request.");
-        return { results: [], total_pages: 0 };
-      }
-      return response;
-    },
+    queryFn: () => fetchMovies(query, page),
     enabled: query !== "",
     placeholderData: keepPreviousData,
   });
@@ -55,6 +48,12 @@ function App() {
   const handleCloseModal = () => {
     setSelectedMovie(null);
   };
+
+  useEffect(() => {
+    if (isSuccess && data.results.length === 0) {
+      toast.error("No movies found for your request.");
+    }
+  }, [data, isSuccess]);
 
   const totalPages = data?.total_pages ?? 0;
 
